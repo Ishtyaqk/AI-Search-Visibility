@@ -1,77 +1,76 @@
-# AI-Search-Visibility
+# AI Evaluation SaaS Dashboard
 
-# 🧠 AI Agent Evaluation Framework
+A full-stack SaaS application for managing AI model evaluations with Supabase authentication and real-time analytics.
 
-A full-stack Next.js + Supabase web app for evaluating and monitoring AI agents, built as part of the Icecreamlabs Full-Stack Developer Assignment.
+## Features
 
----
+- User authentication with Supabase Auth
+- Create and manage evaluation configurations
+- Ingest evaluation data via API
+- Real-time analytics dashboard
+- User profile management
+- Row-level security for data privacy
 
-## 🚀 Overview
+## Setup
 
-Each user can:
-- Configure their AI evaluation settings.
-- Upload or simulate evaluation results.
-- View dashboards with key metrics such as accuracy, latency, and PII redaction rate.
-- Drill down into detailed evaluation records.
+### Prerequisites
 
-The app demonstrates:
-- Multi-tenancy using Supabase Auth + Row Level Security (RLS)
-- Real-time dashboards with Recharts
-- REST API ingestion endpoint for evaluation data
-- Scalable schema handling up to 20,000 rows
+- Node.js 18+
+- Supabase account
 
----
+### Environment Variables
 
-## 🏗️ Tech Stack
+Create a `.env.local` file with:
 
-- **Frontend:** Next.js 14, TypeScript, TailwindCSS, shadcn/ui
-- **Backend:** Supabase (PostgreSQL, Auth, RLS)
-- **Charts:** Recharts / Chart.js
-- **Deployment:** Vercel
-- **Seed Script:** Node.js (faker.js)
+\`\`\`
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+\`\`\`
 
----
+### Installation
 
-## 🧩 Database Schema
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Set up Supabase:
+   - Create a new Supabase project
+   - Run the migration: `supabase/migrations/001_init_schema.sql`
+4. Seed test data: `npm run seed`
+5. Start development: `npm run dev`
 
--- Fix RLS policy on profiles table to allow trigger to insert
--- The trigger function needs to be able to insert profiles for new users
+## Test Credentials
 
--- Drop the restrictive insert policy
-drop policy if exists "Users can insert their own profiles" on profiles;
+After running the seed script:
 
--- Create a new policy that allows both users and the trigger function to insert
-create policy "Allow profile creation"
-  on profiles for insert
-  with check (true);
+- Email: `test@example.com`
+- Password: `Test123!@#`
 
--- Keep the select and update policies restrictive
-drop policy if exists "Users can read their own profile" on profiles;
-drop policy if exists "Users can update their own profile" on profiles;
+## API Endpoints
 
-create policy "Users can read their own profile"
-  on profiles for select
-  using (auth.uid() = id);
+### POST /api/evals/ingest
 
-create policy "Users can update their own profile"
-  on profiles for update
-  using (auth.uid() = id);
+Ingest evaluation data.
 
+\`\`\`bash
+curl -X POST http://localhost:3000/api/evals/ingest \
+  -H "Content-Type: application/json" \
+  -d '{
+    "configId": "config-uuid",
+    "input": "test input",
+    "output": "test output",
+    "score": 0.95
+  }'
+\`\`\`
 
----
+## Deployment
 
-## 🔐 RLS Policies
+Deploy to Vercel:
 
-Enable Row Level Security on `evals` and `eval_config`.
+1. Push to GitHub
+2. Connect repository to Vercel
+3. Add environment variables in Vercel dashboard
+4. Deploy
 
-```sql
-alter table evals enable row level security;
-alter table eval_config enable row level security;
+## License
 
-create policy "Users can read their own data"
-on evals for select
-using (auth.uid() = user_id);
-
-create policy "Users can insert their own data"
-on evals for insert
-with check (auth.uid() = user_id);
+MIT
